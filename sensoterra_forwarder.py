@@ -35,9 +35,12 @@ app = Flask(__name__)
 #globals
 start = int(round(time.time()))
 print("Starting python app")
+oauth_token_url = "https://monitor.sensoterra.com/api/v3/#/customer/post_customer_oauth"
 
-
+#TODO: Token update 
 token1 ="eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6ImE1NGQ4YmEyZTU2Yzk2Mjk4NTMyODZlNzYwMzJmZWYxZDk3Mjc1MmI0NjEzN2FlZmEzOTcwMzUzMjI1ZWVmOTg1NWU3MDM0ZmFkZWNjNmQ3In0.eyJhdWQiOiJuaWhhcmlrYS5yYWhtYW5AdGVhZ2FzYy5pZSIsImp0aSI6ImE1NGQ4YmEyZTU2Yzk2Mjk4NTMyODZlNzYwMzJmZWYxZDk3Mjc1MmI0NjEzN2FlZmEzOTcwMzUzMjI1ZWVmOTg1NWU3MDM0ZmFkZWNjNmQ3IiwiaWF0IjoxNTc2MjMzMzI4LCJuYmYiOjE1NzYyMzMzMjgsImV4cCI6MTU3ODk5ODEyOCwic3ViIjoiIiwic2NvcGVzIjpbImRlY29kZXIiXX0.wK8C0MDih5SvatoIN3uYBbPSbW1qcxtwPWk6zDQg1xOlALMlC4f7nMN4Ab2DdJC4sFuKEhlude_Pf5jeTEySz6YxqrmGcj-Q-rU8DQlMU0Jw8azOCVnuT33siU6PMMapL7zAeby6tRBezfURiTDjX3JlmINLby3RgkPLwXXDAsnvEM4YyFVWiVKlN0H_smT669l0Gbm2tvOEe4Noa1MOsekZK7QKm15SfyhD59bllh7npWTpMgU4uHmSwpeLbvBRWWt872VQgbBItt0NQUOD869U_P_Phr1JGLzlR3Q17ZstreRIFnUJPRlmojd7yeyj8l97S2DAybx6rrq5SzfZ9Q"
+
+
 # RESPONSE from NL [{"bver":3,"bn":"urn:dev:com.sensoterra:18000218597","bt":1564659048,"u":"lat","v":52.2924232},{"u":"lon","v":-6.4994755},{"v":34.4,"u":"%vol","depth":15,"soil":"SAND","ut":5400},{"v":34.3,"u":"%vol","depth":15,"soil":"SAND","t":-3600,"ut":5400},{"v":34,"u":"%vol","depth":15,"soil":"SAND","t":-7200,"ut":5400},{"v":33.9,"u":"%vol","depth":15,"soil":"SAND","t":-10800,"ut":5400},{"v":33.9,"u":"%vol","depth":15,"soil":"SAND","t":-14400,"ut":5400},{"v":33.9,"u":"%vol","depth":15,"soil":"SAND","t":-18000,"ut":5400}]
 pnPayload = "{\"moteType_id\":\"5d3eee30a039900015f930f2\"}"   # this is the id of the device type don't change this
 pnEndPoint = "http://pervasivenation.davra.com"
@@ -60,23 +63,37 @@ internalHeader = {
 
 @app.route("/")
 
-def readSettings():
-# this function will read in a JSON file and will return an json object
-    settings=""
-    try:
-       with open("/src/settings.json","r") as fs:
-         text = fs.readlines()
-         for line in text:
-             line = line.rstrip()
-             settings=settings+str(line.strip('\n'))
-             print("The token was read " + str(line))
-    except:
+# def readSettings():
+# # this function will read in a JSON file and will return an json object
+#     settings=""
+#     try:
+#        with open("/src/settings.json","r") as fs:
+#          text = fs.readlines()
+#          for line in text:
+#              line = line.rstrip()
+#              settings=settings+str(line.strip('\n'))
+#              print("The token was read " + str(line))
+#     except:
         
-        print("There is a problem opening the settings file")
-    finally:
-       fs.close
+#         print("There is a problem opening the settings file")
+#     finally:
+#         fs.close
+#     return settings  
 
-    return settings    
+def getOauthToken(VERB, searchurl, payload):
+    print(searchurl)
+    #TODO: Do POST request
+    
+    respose = {
+            "token_type": "Bearer",
+            "expires_in": 3600,
+            "access_token": "eyJ0eXAiOiJKV1Qir2DWO6iVKX6q1jHHzO75C6o-WFhhLwHPLCJhbGciOiJSUzI1NiIsImp0aSI6IjhmZTAxMjc4M2ViOGE2YzU0YTM3NDQ1MTFkNGIyY2RiYjM1MzQ0NDQxZTJhNzM4N2ZmYTY4NjdjZDM1NWQ3NmZlODE1MjhlOGU3MjM5MDk1In0.eyJhdWQiOiJkZW1vIiwianRpIjoiOGZlMDEyNzgzZWI4YTZjNTRhMzc0NDUxMWQ0YjJjZGJiMzUzNDQ0NDFlMmE3Mzg3ZmZhNjg2N2NkMzU1ZDc2ZmU4MTUyOGU4ZTcyMzkwOTUiLCJpYXQiOjE1MzUwMTM3NjQsIm5iZiI6MTUzNTAxMzc2NCwiZXhwIjoxNTM1MDE3MzY0LCJzdWIiOiIiLCJzY29wZXMiOlsic2Vuc29yX2RhdGEiXX0.d-qAT7VIyFg_1JEzx0vLSbUDKfedcockaNj9OYzhI5HXcVUMf7irFnKVg-XT9vuETR9xxNPOkwCi_IYUTeid3uCjl6YbI2oDkCE4KzWgv8nnWtUOeqTPsO5SeiZcv8eBMzWxF1-AgCATTihmr8Mf8KG9BWI_vnBUIY6-SOU-e7ehPQEK4OyR3tjCeUhzWvUhx3jCiI2b9TtE2mPkdJxUfR6Ttc_VSmCGKkMHtOVusm0F6GWW8yKA6_My9xTFgznr65Q88T54K7P2dVrIV3wGvGlboLMLMnAk4gpCexE6Mp6x6LRxswKptA"
+            }
+    return response
+    #return response.text
+
+
+
 def checkObjectStore(VERB, searchurl, internalHeader,col):
     payload = ""
     print(searchurl)
@@ -188,7 +205,11 @@ def parseDevicePayloads(receivedFrames, sensoTerraHeaders, lastTimeStamp, colurl
             x=x+1
     return currentTimeStamp    
 #end of parseDevicePayloads)
+
+
+
 if __name__ == '__main__':
+
      dirpath = os.getcwd()
      print("current directory is : " + dirpath)
      foldername = os.path.basename(dirpath)
@@ -196,8 +217,20 @@ if __name__ == '__main__':
 #     settingsObj = json.loads(readSettings())    
 #     deviceArray =  str(settingsObj["decoder"])
      deviceArray =  {"5d3eee30a039900015f930f2"}
-     accessToken =  "Bearer " + str(token1)
+   
+###### UOPDATE TOKEN #####
+     payload = {
+                "client_id": "demo",
+                "client_secret": "MY_API_KEY", #TODO: Set real credentials
+                "grant_type": "client_credentials",
+                "scope": "decoder"
+                }
+     
+     responseOauth = getOauthToken("POST", oauth_token_url, payload)
+     token = responseOauth['access_token']
+####### END UPDATE TOKEN #########
 
+     accessToken =  "Bearer " + str(token)
 
      sensoTerraHeaders = {
               'Content-Type': "application/json",
@@ -206,35 +239,36 @@ if __name__ == '__main__':
               'Cache-Control': "no-cache",
               } 
 
- 
+ #TODO: How catch data from Orbwise??
+ #TODO: Where the data is send to SensoterraAPI??
        
-     time.sleep(10)         
-     returnedTS = 0
-     searchurl = colurl 
-     answer = checkObjectStore("GET", searchurl, internalHeader, collection)
-     print(answer)
-     time.sleep(1)
+#      time.sleep(10)         
+#      returnedTS = 0
+#      searchurl = colurl 
+#      answer = checkObjectStore("GET", searchurl, internalHeader, collection)
+#      print(answer)
+#      time.sleep(1)
      
-     tbr = getTimeStamp(colurl, internalHeader)
-     print("This is the returned Time " + str(tbr))
+#      tbr = getTimeStamp(colurl, internalHeader)
+#      print("This is the returned Time " + str(tbr))
 
-     while True:
-        for singleDevice in deviceArray:
+#      while True:
+#         for singleDevice in deviceArray:
 
-            response = requests.request("POST", pnQueryurl, data=pnPayload, headers=internalHeader)
-            print(response.text)    
-            receivedFrames = json.loads(response.text)
-            print("The last Time stamp...................." + str(lastTimeStamp))
+#             response = requests.request("POST", pnQueryurl, data=pnPayload, headers=internalHeader)
+#             print(response.text)    
+#             receivedFrames = json.loads(response.text)
+#             print("The last Time stamp...................." + str(lastTimeStamp))
             
             
-            returnedTS = parseDevicePayloads(receivedFrames, sensoTerraHeaders, lastTimeStamp,colurl,internalHeader)
-            if returnedTS > lastTimeStamp:
-                lastTimeStamp = returnedTS
-                print("The last Time stamp is " + str(lastTimeStamp)  +"    " +  str(returnedTS))
-            else:
-                print("No Records updated since " + str(lastTimeStamp))
-        print("Sweep finished now " + str(datetime.datetime.now()) + " and will restart again in 60 Mins. for time stamps after " + str(lastTimeStamp))
+#             returnedTS = parseDevicePayloads(receivedFrames, sensoTerraHeaders, lastTimeStamp,colurl,internalHeader)
+#             if returnedTS > lastTimeStamp:
+#                 lastTimeStamp = returnedTS
+#                 print("The last Time stamp is " + str(lastTimeStamp)  +"    " +  str(returnedTS))
+#             else:
+#                 print("No Records updated since " + str(lastTimeStamp))
+#         print("Sweep finished now " + str(datetime.datetime.now()) + " and will restart again in 60 Mins. for time stamps after " + str(lastTimeStamp))
         
-#        print("Sweep finished now " + str(datetime.datetime.now()) + " and will restart again in 5 Mins. for time stamps after " + str(lastTimeStamp))   
-        time.sleep(3600)
-        print("Davra SensoTerra Bridge")
+# #        print("Sweep finished now " + str(datetime.datetime.now()) + " and will restart again in 5 Mins. for time stamps after " + str(lastTimeStamp))   
+#         time.sleep(3600)
+#         print("Davra SensoTerra Bridge")
